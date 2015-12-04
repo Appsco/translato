@@ -1,0 +1,21 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/book/service_container.html
+parameters:
+#    parameter_name: value
+
+services:
+    user_provider.appsco:
+        class: AppBundle\Security\User\AppscoUserProvider
+        arguments:
+            - @store
+
+    store:
+        class: AppBundle\Services\Store
+        arguments:
+            - @serializer
+            - %kernel.root_dir%/../var/files
+
+    loader:
+        class: AppBundle\Services\Loader
+        arguments:
+            - @jms_translation.loader_manager
