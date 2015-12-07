@@ -4,6 +4,7 @@ namespace AppBundle\Model;
 
 use JMS\Serializer\Annotation as JMS;
 use JMS\TranslationBundle\Util\FileUtils;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Project 
 {
@@ -192,6 +193,29 @@ class Project
         $files = $this->getFiles();
 
         return $files[$domain][$locale][0];
+    }
+
+    /**
+     * @return int
+     */
+    public function getFileCount()
+    {
+        $files = $this->getFiles();
+        $count = 0;
+        foreach ($files as $domain=>$arr) {
+            $count += count($arr);
+        }
+
+        return $count;
+    }
+    /**
+     * @return Project
+     */
+    public function resetFiles()
+    {
+        $this->_files = null;
+
+        return $this;
     }
 
     /**

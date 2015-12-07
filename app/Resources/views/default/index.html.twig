@@ -6,26 +6,8 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <div class="mt-30">
-                    <form action="{{ path('homepage') }}" method="get">
-                        <select id="project" name="project" data-control>
-                            {% for project in app.user.translations.projects %}
-                                <option value="{{ project.id }}" {% if info.project.id == project.id %} selected="selected" {% endif %}>{{ project.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <select id="domain" name="domain" data-control>
-                            {% for domain in info.project.getDomains %}
-                                <option value="{{ domain }}" {% if info.domain == domain %} selected="selected" {% endif %}>{{ domain }}</option>
-                            {% endfor %}
-                        </select>
-
-                        <select id="lang" name="lang" data-control>
-                            {% for lang in info.project.getLocales(info.domain) %}
-                                <option value="{{ lang }}" {% if info.locale == lang %} selected="selected" {% endif %}>{{ lang }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
-                </div>
+                <h1>Project: "{{ info.project.name }}"</h1>
+                <hr />
 
                 {% if info.newMessages|length %}
                     <h2>New Messages</h2>

@@ -71,6 +71,7 @@ class Loader
             $project,
             $domain,
             $locale,
+            $catalogue,
             $newMessages,
             $existingMessages,
             $alternativeMessages

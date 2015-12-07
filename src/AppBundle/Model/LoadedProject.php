@@ -3,6 +3,7 @@
 namespace AppBundle\Model;
 
 use JMS\TranslationBundle\Model\Message;
+use JMS\TranslationBundle\Model\MessageCatalogue;
 
 class LoadedProject
 {
@@ -14,6 +15,9 @@ class LoadedProject
 
     /** @var string */
     private $locale;
+
+    /** @var MessageCatalogue */
+    private $catalogue;
 
     /**
      * id => Message
@@ -34,17 +38,19 @@ class LoadedProject
     private $alternativeMessages;
 
     /**
-     * @param Project   $project
-     * @param string    $domain
-     * @param string    $locale
-     * @param Message[] $newMessages
-     * @param Message[] $existingMessages
-     * @param array     $alternativeMessages
+     * @param Project          $project
+     * @param string           $domain
+     * @param string           $locale
+     * @param MessageCatalogue $catalogue
+     * @param Message[]        $newMessages
+     * @param Message[]        $existingMessages
+     * @param array            $alternativeMessages
      */
     public function __construct(
         Project $project,
         $domain,
         $locale,
+        MessageCatalogue $catalogue,
         array $newMessages,
         array $existingMessages,
         array $alternativeMessages
@@ -52,6 +58,7 @@ class LoadedProject
         $this->project = $project;
         $this->domain = $domain;
         $this->locale = $locale;
+        $this->catalogue = $catalogue;
         $this->newMessages = $newMessages;
         $this->existingMessages = $existingMessages;
         $this->alternativeMessages = $alternativeMessages;
@@ -79,6 +86,14 @@ class LoadedProject
     public function getLocale()
     {
         return $this->locale;
+    }
+
+    /**
+     * @return MessageCatalogue
+     */
+    public function getCatalogue()
+    {
+        return $this->catalogue;
     }
 
     /**

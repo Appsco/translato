@@ -19,3 +19,16 @@ services:
         class: AppBundle\Services\Loader
         arguments:
             - @jms_translation.loader_manager
+
+    project_creator:
+        class: AppBundle\Services\ProjectCreator
+        arguments:
+            - @store
+
+    file_adder:
+        class: AppBundle\Services\FileAdder
+        arguments:
+            - @store
+            - @loader
+            - @jms_translation.loader_manager
+            - @jms_translation.file_writer

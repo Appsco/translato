@@ -7,23 +7,34 @@
 
             {% if app.user and app.user.translations.projects %}
             <li>
-                <a href="" class="dropdown-toggle" data-toggle="dropdown">
-                    <i class="fa fa-files-o"></i> Projects
-                    <span class="fa fa-caret-down caret-dropdown caret-color"></span>
-                </a>
-                <ul class="dropdown-menu" role="menu">
-                    {% for project in app.user.translations.projects %}
-                        <li><a href="{{ path('homepage', {project: project.id}) }}"><i class="fa fa-file-text-o"></i> {{ project.name }}</a></li>
-                    {% endfor %}
-                    <li class="divider"></li>
-                    <li>
-                        <a href="{{ path('project.new') }}"><i class="fa fa-plus"></i> New Project</a>
-                    </li>
-                </ul>
+                <a href="{{ path('project.list') }}"><i class="fa fa-files-o"></i> Projects</a>
             </li>
             {% endif %}
 
         </ul>
+
+        {% if info is defined and info %}
+            <div class="nav navbar-nav mt-15 ml-20" style="color: #000000;">
+                <form action="{{ path('homepage') }}" method="get">
+                    <select id="project" name="project" data-control>
+                        {% for project in app.user.translations.projects %}
+                            <option value="{{ project.id }}" {% if info.project.id == project.id %} selected="selected" {% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="domain" name="domain" data-control>
+                        {% for domain in info.project.getDomains %}
+                            <option value="{{ domain }}" {% if info.domain == domain %} selected="selected" {% endif %}>{{ domain }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="lang" name="lang" data-control>
+                        {% for lang in info.project.getLocales(info.domain) %}
+                            <option value="{{ lang }}" {% if info.locale == lang %} selected="selected" {% endif %}>{{ lang }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        {% endif %}
 
         <ul class="nav navbar-nav navbar-right mr-20">
             {% if app.user %}

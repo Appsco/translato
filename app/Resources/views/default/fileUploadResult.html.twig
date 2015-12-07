@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ include('partial/header.html.twig') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-sm-10 col-xs-12">
+                <a href="{{ path('file.upload', {projectId: project.id}) }}" class="btn btn-primary pull-right mt-20">Upload More</a>
+
+                <h1>Add/Merge Result "{{ project.name }}"</h1>
+
+                {% for file, result in results %}
+                    <h2>{{ file }}</h2>
+
+                    {% if result.conflicts|length == 0 and result.modified|length == 0 and result.added|length == 0 and result.deleted|length == 0%}
+                        <h4>No changes detected</h4>
+                    {% endif %}
+
+                    {% if result.conflicts|length > 0 %}
+                        <h4>Conflicts</h4>
+                        <ul>
+                        {% for conflict in result.conflicts %}
+                            <li>
+                                {{ conflict.id }}<br/>
+                                <b>Local value</b>: {{ conflict.localValue }}<br/>
+                                <b>Input value</b>: {{ conflict.inputValue }}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if result.modified|length > 0 %}
+                        <h4>Modified</h4>
+                        <ul>
+                            {% for id in result.modified %}
+                                <li>{{ id }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if result.added|length > 0 %}
+                        <h4>Added</h4>
+                        <ul>
+                            {% for id in result.added %}
+                                <li>{{ id }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if result.deleted|length > 0 %}
+                        <h4>Deleted</h4>
+                        <ul>
+                            {% for id in result.deleted %}
+                                <li>{{ id }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

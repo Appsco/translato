@@ -6,6 +6,7 @@ use AppBundle\Model\Account;
 use AppBundle\Model\Project;
 use AppBundle\Model\Translations;
 use JMS\Serializer\Serializer;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Store
@@ -57,7 +58,7 @@ class Store
      * @param Account $account
      * @param string  $name
      *
-     * @return Store
+     * @return Project
      */
     public function addProject(Account $account, $name)
     {
@@ -72,28 +73,58 @@ class Store
         $account->getTranslations()->addProject($project);
         $this->save($account->getUsername(), $account->getTranslations());
 
+        return $project;
+    }
+
+    /**
+     * @param Account      $account
+     * @param Project      $project
+     * @param UploadedFile $uploadedFile
+     *
+     * @return Store
+     */
+    public function addFile(Account $account, Project $project, UploadedFile $uploadedFile)
+    {
+        $dir = $this->getUserDirPath($account->getUsername());
+        $this->ensureUserDir($account->getUsername());
+        $uploadedFile->move($dir.'/'.$project->getId(), $uploadedFile->getClientOriginalName());
+
+        $project->resetFiles();
+        $project->setModifiedAt(new \DateTime());
+        $this->save($account->getUsername(), $account->getTranslations());
+
         return $this;
     }
 
-//    /**
-//     * @param Account      $account
-//     * @param UploadedFile $uploadedFile
-//     * @param string       $name
-//     *
-//     * @return File
-//     */
-//    public function addFile(Account $account, UploadedFile $uploadedFile, $name)
-//    {
-//        $dir = $this->getUserDirPath($account->getUsername());
-//        $this->ensureUserDir($account->getUsername());
-//        $uploadedFile->move($dir);
-//
-//        $file = new File($uploadedFile->getClientOriginalName(), $name, $this->getUserDirPath($account->getUsername()).'/'.$uploadedFile->getFilename());
-//        $account->getUserFiles()->addFile($file);
-//        $this->save($account->getUsername(), $account->getUserFiles());
-//
-//        return $file;
-//    }
+    /**
+     * @param Account $account
+     * @param Project $project
+     * @param         $domain
+     * @param         $locale
+     *
+     * @return Store
+     */
+    public function deleteFile(Account $account, Project $project, $domain, $locale)
+    {
+        $path = $project->getFilePathName($domain, $locale);
+        unlink($path);
+        $project->resetFiles();
+
+        $project->setModifiedAt(new \DateTime());
+        $this->save($account->getUsername(), $account->getTranslations());
+
+        return $this;
+    }
+
+    public function deleteProject(Account $account, Project $project)
+    {
+        $dir = $this->getUserDirPath($account->getUsername());
+        $filesystem = new Filesystem();
+        $filesystem->remove($dir.'/'.$project->getId());
+
+        $account->getTranslations()->removeProject($project->getId());
+        $this->save($account->getUsername(), $account->getTranslations());
+    }
 
     /**
      * @param string $username

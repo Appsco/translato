@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ include('partial/header.html.twig') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-sm-10 col-xs-12">
+                <h1>Add/Merge Files to project</h1>
+
+                {{ form_start(form) }}
+
+                <div class="alert alert-warning">
+                    Uploaded files are matches against existing file by domain and locale. Filename must be in the format
+                    <b>[domain].[locale].ext</b>. If such file does not exist in the project, it will just be added unmodified. If such
+                    file exists, it will be merged with existing project file. Merge behavior depends on the "remove non-existing" checkbox.
+                </div>
+
+                <div class="alert alert-warning">
+                    <p>
+                        If "remove non-existing" <b>is checked</b>, the keys that do not exist in uploaded file, but exist in in project file
+                        with same domain and locale will be removed from the project. This is <i>recommended</i> in case you are uploading
+                        translation file extracted from the source code, and you do not want to maintain non-used keys.
+                    </p>
+                    <p>
+                        If "remove non-existing" <b>is NOT checked</b>, all the keys that exist in the project file with same domain and
+                        locale will remain after upload, regardless if they exist or not in the uploaded file.
+                    </p>
+                    <p>If you don't know what's this about, just leave it as it is - checked.</p>
+                </div>
+
+                {{ form_widget(form) }}
+
+                <div class="alert alert-info">
+                    Note that you can select multiple files holding CTRL keyboard button!
+                </div>
+
+                <input type="submit" class="btn btn-primary" value="Upload" />
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

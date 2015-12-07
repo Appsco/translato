@@ -1,7 +1,7 @@
 {% for id, message in messages %}
     <div class="row">
         <div class="col-xs-4">
-            {{ id }}
+            <code>{{ id }}</code>
         </div>
         <div class="col-xs-4">
             <textarea data-id="{{ id }}" style="width: 98%">{{ message.localeString }}</textarea>
@@ -11,9 +11,9 @@
                 <h6>Meaning</h6>
                 <p>{{ message.meaning }}</p>
             {% endif %}
-            {% if alternativeMessages[id] is defined %}
+            {% if info.alternativeMessages[id] is defined %}
                         <h6>Alternative Translations</h6>
-                        {% for locale, altMessage in alternativeMessages[id] %}
+                        {% for locale, altMessage in info.alternativeMessages[id] %}
                         <p>
                             <strong>{{ locale }}:</strong> <pre>{{ altMessage.localeString }}</pre>
                         </p>

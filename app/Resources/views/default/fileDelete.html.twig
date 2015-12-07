@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ include('partial/header.html.twig') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7 col-sm-10 col-xs-12">
+                <h1>Delete File</h1>
+
+                <dl class="dl-horizontal">
+                    <dt>Project</dt>
+                    <dd>{{ project.name }}</dd>
+                    <dt>File</dt>
+                    <dd>{{ domain }}.{{ locale }}</dd>
+                </dl>
+
+                {{ form_start(form) }}
+                {{ form_widget(form) }}
+
+                <div class="alert alert-danger">
+                    Are you sure you want to delete this file?
+                </div>
+
+                <a href="{{ path('project.list') }}" class="btn btn-default pull-right">Cancel</a>
+
+                <input type="submit" class="btn btn-primary" value="Delete" />
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

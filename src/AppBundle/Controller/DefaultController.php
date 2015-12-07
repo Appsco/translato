@@ -3,12 +3,17 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Form\Type\AddNewFileType;
+use AppBundle\Form\Type\NewProjectType;
+use AppBundle\Form\Type\UploadFilesType;
 use AppBundle\Model\Account;
 use AppBundle\Model\Project;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DefaultController extends Controller
 {
@@ -18,8 +23,7 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        /** @var Account $account */
-        $account = $this->getUser();
+        $account = $this->getAccount();
         if ($account->getTranslations()->getProjectCount() == 0) {
             return $this->redirectToRoute('project.new');
         }
@@ -50,18 +54,112 @@ class DefaultController extends Controller
     }
 
     /**
+     * @Route("/project/list", name="project.list")
+     * @Template("default/projectList.html.twig")
+     */
+    public function projectListAction()
+    {
+        return [];
+    }
+
+    /**
+     * @Route("/file/download/{projectId}/{domain}/{locale}", name="file.download")
+     */
+    public function fileDownloadAction($projectId, $domain, $locale)
+    {
+        $account = $this->getAccount();
+
+        $path = $account->getTranslations()->getProject($projectId)->getFilePathName($domain, $locale);
+        $pathInfo = pathinfo($path);
+
+        $response = new BinaryFileResponse($path);
+        $d = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $pathInfo['basename']
+        );
+        $response->headers->set('Content-Disposition', $d);
+
+        return $response;
+    }
+
+    /**
+     * @Route("/file/view/{projectId}/{domain}/{locale}", name="file.view")
+     */
+    public function fileViewAction($projectId, $domain, $locale)
+    {
+        $account = $this->getAccount();
+
+        $path = $account->getTranslations()->getProject($projectId)->getFilePathName($domain, $locale);
+
+        return new BinaryFileResponse($path);
+    }
+
+    /**
+     * @Route("/file/delete/{projectId}/{domain}/{locale}", name="file.delete")
+     * @Template("default/fileDelete.html.twig")
+     */
+    public function fileDeleteAction($projectId, $domain, $locale, Request $request)
+    {
+        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        if (null == $project) {
+            throw new NotFoundHttpException();
+        }
+
+        $form = $this->createForm('form');
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $this->get('store')->deleteFile($this->getAccount(), $project, $domain, $locale);
+
+            return $this->redirectToRoute('project.list');
+        }
+
+        return [
+            'form' => $form->createView(),
+            'project' => $project,
+            'domain' => $domain,
+            'locale' => $locale,
+        ];
+    }
+
+    /**
+     * @Route("/project/delete/{projectId}", name="project.delete")
+     * @Template("default/projectDelete.html.twig")
+     */
+    public function projectDeleteAction($projectId, Request $request)
+    {
+        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        if (null == $project) {
+            throw new NotFoundHttpException();
+        }
+
+        $form = $this->createForm('form');
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $this->get('store')->deleteProject($this->getAccount(), $project);
+
+            return $this->redirectToRoute('project.list');
+        }
+
+        return [
+            'form' => $form->createView(),
+            'project' => $project,
+        ];
+    }
+
+    /**
      * @Route("/project/new", name="project.new")
      * @Template("default/newProject.html.twig")
      */
-    public function newProjectAction(Request $request)
+    public function projectNewAction(Request $request)
     {
-        $form = $this->createForm(new AddNewFileType());
+        $form = $this->createForm(new NewProjectType());
         $form->handleRequest($request);
         if ($form->isValid()) {
             $data = $form->getData();
-            $this->get('store')->addFile($this->getUser(), $data['file'], $data['name']);
 
-            return $this->redirectToRoute('homepage');
+            $project = $this->get('project_creator')->create($this->getAccount(), $data['name'], $data['files']);
+
+            return $this->redirectToRoute('homepage', ['project'=>$project->getId()]);
         }
 
         return [
@@ -70,10 +168,40 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/project/{id}/edit", name="project.edit")
+     * @Route("/project/{projectId}/file/upload", name="file.upload")
+     * @Template("default/fileUpload.html.twig")
      */
-    public function editProjectAction($id)
+    public function fileUploadAction($projectId, Request $request)
     {
+        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        if (null == $project) {
+            throw new NotFoundHttpException();
+        }
 
+        $form = $this->createForm(new UploadFilesType());
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $data = $form->getData();
+            $results = $this->get('file_adder')->addFiles($this->getAccount(), $project, $data['files'], $data['save']);
+
+            return $this->render('default/fileUploadResult.html.twig', [
+                'project' => $project,
+                'results' => $results,
+                'save' => $data['save'],
+            ]);
+        }
+
+        return [
+            'form' => $form->createView(),
+            'project' => $project,
+        ];
+    }
+
+    /**
+     * @return Account
+     */
+    private function getAccount()
+    {
+        return $this->getUser();
     }
 }
