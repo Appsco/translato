@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ include('partial/header.html.twig') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7 col-sm-10 col-xs-12">
+                <h1>Clone Project</h1>
+
+                {{ form_start(form) }}
+                {{ form_widget(form) }}
+
+                <input type="submit" class="btn btn-primary" value="Clone" />
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

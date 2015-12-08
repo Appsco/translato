@@ -76,6 +76,33 @@ class Store
         return $project;
     }
 
+    public function cloneProject(Account $account, $reference)
+    {
+        $chunks = explode('/', $reference);
+        if (count($chunks) != 2) {
+            throw new \InvalidArgumentException('Invalid project reference');
+        }
+
+        $sourceUsername = $chunks[0];
+        $sourceProjectId = $chunks[1];
+        $sourceTranslations = $this->load($sourceUsername);
+        $sourceProject = $sourceTranslations->getProject($sourceProjectId);
+
+        $name = sprintf('%s %s', $sourceUsername, $sourceProject->getName());
+        foreach ($account->getTranslations()->getProjects() as $p) {
+            if ($p->getName() == $name) {
+                $this->deleteProject($account, $p);
+            }
+        }
+
+        $project = $this->addProject($account, $name);
+
+        $fs = new Filesystem();
+        $fs->mirror($sourceProject->getPath(), $project->getPath());
+
+        return $project;
+    }
+
     /**
      * @param Account      $account
      * @param Project      $project

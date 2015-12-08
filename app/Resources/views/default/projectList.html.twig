@@ -7,6 +7,7 @@
         <div class="row">
             <div class="col-xs-12">
                 <a href="{{ path('project.new') }}" class="btn btn-primary mt-20 pull-right"><i class="fa fa-plus"></i> New Project</a>
+                <a href="{{ path('project.clone') }}" class="btn btn-primary mt-20 mr-30 pull-right"><i class="fa fa-clone"></i> Clone Project</a>
 
                 <h1>Project List</h1>
 
@@ -21,7 +22,11 @@
                     <tbody>
                         {% for project in app.user.translations.projects %}
                             <tr>
-                                <td><span class="lead">{{ project.name }}</span></td>
+                                <td>
+                                    <span class="lead">{{ project.name }}</span>
+                                    <br/>
+                                    <small><input title="Project reference" type="text" style="width: 99%; border: solid #dddddd 1px;" value="{{ app.user.username }}/{{ project.id }}" readonly onfocus="this.select()"></small>
+                                </td>
                                 <td>
                                     <ul class="list-unstyled">
                                     {% for domain in project.domains %}

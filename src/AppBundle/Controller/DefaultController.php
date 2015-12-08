@@ -2,6 +2,7 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Form\Type\CloneProjectType;
 use AppBundle\Form\Type\NewProjectType;
 use AppBundle\Form\Type\UploadFilesType;
 use AppBundle\Model\Account;
@@ -223,6 +224,26 @@ class DefaultController extends Controller
         $this->get('jms_translation.updater')->updateTranslation($file, $format, $domain, $locale, $id, $message);
 
         return new Response();
+    }
+
+    /**
+     * @Route("/project/clone", name="project.clone")
+     * @Template("default/projectClone.html.twig")
+     */
+    public function cloneProject(Request $request)
+    {
+        $form = $this->createForm(new CloneProjectType());
+        $form->handleRequest($request);
+        if ($form->isValid()) {
+            $data = $form->getData();
+            $project = $this->get('store')->cloneProject($this->getAccount(), $data['reference']);
+
+            return $this->redirectToRoute('homepage', ['project'=>$project->getId()]);
+        }
+
+        return [
+            'form' => $form->createView(),
+        ];
     }
 
     /**
