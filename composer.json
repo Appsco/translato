@@ -1,6 +1,6 @@
 {
-    "name": "tmilos/translato",
-    "license": "proprietary",
+    "name": "appsco/translato",
+    "license": "MIT",
     "type": "project",
     "autoload": {
         "psr-4": {
