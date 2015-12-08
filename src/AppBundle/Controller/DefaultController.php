@@ -2,17 +2,19 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Form\Type\AddNewFileType;
 use AppBundle\Form\Type\NewProjectType;
 use AppBundle\Form\Type\UploadFilesType;
 use AppBundle\Model\Account;
 use AppBundle\Model\Project;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DefaultController extends Controller
@@ -195,6 +197,32 @@ class DefaultController extends Controller
             'form' => $form->createView(),
             'project' => $project,
         ];
+    }
+
+    /**
+     * @Route("/save/{projectId}/{domain}/{locale}", name="translate", options={"i18n" = false}))
+     * @Method("PUT")
+     */
+    public function translateAction($projectId, $domain, $locale, Request $request)
+    {
+        $id = $request->query->get('id');
+        $message = $request->request->get('message');
+
+        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        if (null == $project) {
+            throw new NotFoundHttpException();
+        }
+
+        if (false == in_array($locale, $project->getLocales($domain))) {
+            throw new BadRequestHttpException(sprintf('Invalid locale "%s" for domain "%s" in project "%s"', $locale, $domain, $projectId));
+        }
+
+        $format = $project->getFileFormat($domain, $locale);
+        $file = $project->getFilePathName($domain, $locale);
+
+        $this->get('jms_translation.updater')->updateTranslation($file, $format, $domain, $locale, $id, $message);
+
+        return new Response();
     }
 
     /**

@@ -17,6 +17,9 @@
                 <h2>Existing Messages</h2>
                 {% include 'partial/messages.html.twig' with {messages: info.existingMessages}  %}
 
+                <input type="hidden" id="parameters"
+                    data-url="{{ path('translate', {projectId: info.project.id, domain: info.domain, locale: info.locale}) }}"
+                />
             </div>
         </div>
     </div>
