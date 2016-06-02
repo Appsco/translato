@@ -26,14 +26,14 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        $account = $this->getAccount();
-        if ($account->getTranslations()->getProjectCount() == 0) {
-            return $this->redirectToRoute('project.new');
-        }
+        $account = $this->getAccount($request);
 
         $projectId = $request->get('project');
+        if (!$projectId) {
+            if ($account->getTranslations()->getProjectCount() == 0) {
+                return $this->redirectToRoute('project.list');
+            }
 
-        if ((null == $projectId) || (null == $account->getTranslations()->getProject($projectId))) {
             /** @var Project $project */
             $project = $account->getTranslations()->getFirstProject();
 
@@ -51,6 +51,7 @@ class DefaultController extends Controller
         }
 
         return [
+            'account' => $account,
             'info' => $loadedProject,
             'sourceLanguage' => 'en',
         ];
@@ -68,9 +69,9 @@ class DefaultController extends Controller
     /**
      * @Route("/file/download/{projectId}/{domain}/{locale}", name="file.download")
      */
-    public function fileDownloadAction($projectId, $domain, $locale)
+    public function fileDownloadAction($projectId, $domain, $locale, Request $request)
     {
-        $account = $this->getAccount();
+        $account = $this->getAccount($request);
 
         $path = $account->getTranslations()->getProject($projectId)->getFilePathName($domain, $locale);
         $pathInfo = pathinfo($path);
@@ -88,9 +89,9 @@ class DefaultController extends Controller
     /**
      * @Route("/file/view/{projectId}/{domain}/{locale}", name="file.view")
      */
-    public function fileViewAction($projectId, $domain, $locale)
+    public function fileViewAction($projectId, $domain, $locale, Request $request)
     {
-        $account = $this->getAccount();
+        $account = $this->getAccount($request);
 
         $path = $account->getTranslations()->getProject($projectId)->getFilePathName($domain, $locale);
 
@@ -103,7 +104,7 @@ class DefaultController extends Controller
      */
     public function fileDeleteAction($projectId, $domain, $locale, Request $request)
     {
-        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        $project = $this->getAccount($request)->getTranslations()->getProject($projectId);
         if (null == $project) {
             throw new NotFoundHttpException();
         }
@@ -111,7 +112,7 @@ class DefaultController extends Controller
         $form = $this->createForm('form');
         $form->handleRequest($request);
         if ($form->isValid()) {
-            $this->get('store')->deleteFile($this->getAccount(), $project, $domain, $locale);
+            $this->get('store')->deleteFile($this->getAccount($request), $project, $domain, $locale);
 
             return $this->redirectToRoute('project.list');
         }
@@ -130,7 +131,7 @@ class DefaultController extends Controller
      */
     public function projectDeleteAction($projectId, Request $request)
     {
-        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        $project = $this->getAccount($request)->getTranslations()->getProject($projectId);
         if (null == $project) {
             throw new NotFoundHttpException();
         }
@@ -138,7 +139,7 @@ class DefaultController extends Controller
         $form = $this->createForm('form');
         $form->handleRequest($request);
         if ($form->isValid()) {
-            $this->get('store')->deleteProject($this->getAccount(), $project);
+            $this->get('store')->deleteProject($this->getAccount($request), $project);
 
             return $this->redirectToRoute('project.list');
         }
@@ -160,7 +161,7 @@ class DefaultController extends Controller
         if ($form->isValid()) {
             $data = $form->getData();
 
-            $project = $this->get('project_creator')->create($this->getAccount(), $data['name'], $data['files']);
+            $project = $this->get('project_creator')->create($this->getAccount($request), $data['name'], $data['files']);
 
             return $this->redirectToRoute('homepage', ['project'=>$project->getId()]);
         }
@@ -176,7 +177,7 @@ class DefaultController extends Controller
      */
     public function fileUploadAction($projectId, Request $request)
     {
-        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        $project = $this->getAccount($request)->getTranslations()->getProject($projectId);
         if (null == $project) {
             throw new NotFoundHttpException();
         }
@@ -185,7 +186,7 @@ class DefaultController extends Controller
         $form->handleRequest($request);
         if ($form->isValid()) {
             $data = $form->getData();
-            $results = $this->get('file_adder')->addFiles($this->getAccount(), $project, $data['files'], $data['save']);
+            $results = $this->get('file_adder')->addFiles($this->getAccount($request), $project, $data['files'], $data['save']);
 
             return $this->render('default/fileUploadResult.html.twig', [
                 'project' => $project,
@@ -209,7 +210,7 @@ class DefaultController extends Controller
         $id = $request->query->get('id');
         $message = $request->request->get('message');
 
-        $project = $this->getAccount()->getTranslations()->getProject($projectId);
+        $project = $this->getAccount($request)->getTranslations()->getProject($projectId);
         if (null == $project) {
             throw new NotFoundHttpException();
         }
@@ -236,7 +237,7 @@ class DefaultController extends Controller
         $form->handleRequest($request);
         if ($form->isValid()) {
             $data = $form->getData();
-            $project = $this->get('store')->cloneProject($this->getAccount(), $data['reference']);
+            $project = $this->get('store')->cloneProject($this->getAccount($request), $data['reference']);
 
             return $this->redirectToRoute('homepage', ['project'=>$project->getId()]);
         }
@@ -249,8 +250,15 @@ class DefaultController extends Controller
     /**
      * @return Account
      */
-    private function getAccount()
+    private function getAccount(Request $request)
     {
-        return $this->getUser();
+        $username = $request->get('user');
+        if ($username) {
+            $account = new Account($username, $this->get('store')->load($username));
+        } else {
+            $account = $this->getUser();
+        }
+
+        return $account;
     }
 }

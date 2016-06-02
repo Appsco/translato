@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ include('partial/header.html.twig') }}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h1>Users</h1>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Projects</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for username, translations in users %}
+                            <tr>
+                                <td>{{ username }}</td>
+                                <td>
+                                    <table style="width: 99%" class="table">
+                                        {% for project in translations.projects %}
+                                            <tr >
+                                                <td>
+                                                    <a href="{{ path('homepage') }}?project={{ project.id }}&user={{ username }}">
+                                                        {{ project.name }}
+                                                    </a>
+                                                    <br/>
+                                                    <small><input type="text" readonly value="{{ username }}/{{ project.id }}" onfocus="this.select()" style="width: 300px"/></small>
+
+                                                </td>
+                                                <td style="padding-left: 20px; width: 220px;" align="right">
+                                                    <ul class="list-unstyled">
+                                                    {% for domain in project.domains %}
+                                                        {% for locale in project.getLocales(domain) %}
+                                                            <li style="{% if not loop.last %}border-bottom: solid #dddddd 1px; padding: 5px 0; {% endif %}">
+                                                                {{ domain }}.{{ locale }}
+
+                                                                <div class="pull-right mr-10">
+                                                                    <a href="{{ path('file.view', {projectId: project.id, domain: domain, locale: locale, user: username}) }}" target="_blank" title="view" class="ml-10">
+                                                                        <i class="fa fa-eye"></i></a>
+                                                                    <a href="{{ path('file.download', {projectId: project.id, domain: domain, locale: locale, user: username}) }}" title="download" class="ml-10">
+                                                                        <i class="fa fa-download"></i></a>
+                                                                </div>
+                                                            </li>
+                                                        {% endfor %}
+                                                    {% endfor %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}

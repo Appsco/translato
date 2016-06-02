@@ -9,6 +9,11 @@ services:
         arguments:
             - @store
 
+    user_store:
+        class: AppBundle\Services\UserStore
+        arguments:
+            - "%kernel.root_dir%/../var/files"
+
     store:
         class: AppBundle\Services\Store
         arguments:

@@ -7,15 +7,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class Account implements UserInterface, \Serializable
 {
-    private static $admins = [
-        'milos.tomic@boutsourcing.com' => 1,
-    ];
-
     /** @var string */
     protected $username;
 
     /** @var Translations */
     private $translations;
+
+    /** @var string[] */
+    private $roles = [];
 
     /**
      * @param string    $username
@@ -25,6 +24,7 @@ class Account implements UserInterface, \Serializable
     {
         $this->username = $username;
         $this->translations = $translations;
+        $this->roles = $translations->getRoles();
     }
 
     /**
@@ -32,11 +32,10 @@ class Account implements UserInterface, \Serializable
      */
     public function getRoles()
     {
-        if (isset(self::$admins[$this->getUsername()])) {
-            return ['ROLE_USER', 'ROLE_ADMIN'];
-        }
+        $roles = $this->roles;
+        $roles[] = 'ROLE_USER';
 
-        return ['ROLE_USER'];
+        return array_unique($roles);
     }
 
     /**

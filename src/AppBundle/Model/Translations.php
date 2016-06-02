@@ -7,10 +7,24 @@ use JMS\Serializer\Annotation as JMS;
 class Translations
 {
     /**
+     * @var bool
+     * @JMS\Type(name="array<string>")
+     */
+    protected $roles = ['ROLE_USER'];
+
+    /**
      * @var Project[]
      * @JMS\Type(name="array<AppBundle\Model\Project>")
      */
     protected $projects = [];
+
+    /**
+     * @return string[]
+     */
+    public function getRoles()
+    {
+        return $this->roles;
+    }
 
     /**
      * @return int
