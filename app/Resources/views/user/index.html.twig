@@ -18,7 +18,12 @@
                     <tbody>
                         {% for username, translations in users %}
                             <tr>
-                                <td>{{ username }}</td>
+                                <td>
+                                    {{ username }}
+                                    <p class="ml-10 mt-20">
+                                        <a href="{{ path('user.su', {username: username}) }}">SU</a>
+                                    </p>
+                                </td>
                                 <td>
                                     <table style="width: 99%" class="table">
                                         {% for project in translations.projects %}
